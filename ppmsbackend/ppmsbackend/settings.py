@@ -41,6 +41,7 @@ INSTALLED_APPS = [
 
     'professors',
     'students',
+    'siteadmin'
 ]
 
 MIDDLEWARE = [
