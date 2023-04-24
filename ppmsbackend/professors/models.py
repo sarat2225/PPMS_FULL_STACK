@@ -10,7 +10,7 @@ class Professor(models.Model):
     qualification = models.CharField(max_length=255)
 
 class DoctoralCommittee(models.Model):
-    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    student = models.OneToOneField(Student, primary_key=True, on_delete=models.CASCADE)
     guide = models.ForeignKey(Professor, on_delete=models.CASCADE, related_name='guide')
     co_guide = models.ForeignKey(Professor, on_delete=models.CASCADE, null=True, blank=True, related_name='co_guide')
     dc1 = models.ForeignKey(Professor, on_delete=models.CASCADE, related_name='dc1')

@@ -7,7 +7,7 @@ import 'admin/listofstudents.dart';
 void main() {
   runApp(MaterialApp(
     debugShowCheckedModeBanner: false,
-    initialRoute: '/students',
+    initialRoute: '/login',
     routes: {
       '/login': (context) => Login(),
       '/sign_up': (context) => Register(),
