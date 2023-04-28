@@ -1,21 +1,30 @@
 from rest_framework import serializers
-from .models import Professor, DoctoralCommittee 
-from students.serializers import StudentSerializer 
+from .models import *
+from students.serializers import *
 
 class ProfessorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Professor
         fields = '__all__'
 
+class ProfessorNameSerializer(serializers.ModelSerializer):
+    # name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Professor
+        fields = ['first_name', 'last_name']
+
+    # def get_name(self, obj):
+    #     return f"{obj.first_name} {obj.last_name}"
+
 class DoctoralCommitteeSerializer(serializers.ModelSerializer):
-    student = StudentSerializer(many=False)
-    guide = ProfessorSerializer(many=False)
-    co_guide = ProfessorSerializer(many=False)
-    dc1 = ProfessorSerializer(many=False)
-    dc2 = ProfessorSerializer(many=False)
-    dc3 = ProfessorSerializer(many=False)
+    student = StudentNameSerializer(many=False)
+    guide = ProfessorNameSerializer(many=False)
+    coguide = ProfessorNameSerializer(many=False)
+    dc1 = ProfessorNameSerializer(many=False)
+    dc2 = ProfessorNameSerializer(many=False)
+    dc3 = ProfessorNameSerializer(many=False)
     
     class Meta:
         model = DoctoralCommittee
         fields = '__all__'
-

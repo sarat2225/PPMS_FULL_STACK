@@ -31,6 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'users',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -38,11 +39,21 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'django_crontab',
     'django_filters',
     'professors',
     'students',
-    'siteadmin'
+    'siteadmin',
 ]
+
+CRONJOBS = [
+    # Run a job every day at midnight
+    ('0 0 * * *', 'siteadmin.cron.daily_job'),
+]
+
+# Schedule the cron jobs
+CRONTAB_COMMAND_SUFFIX = ''  
+CRON_EMAIL = False
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -85,6 +96,7 @@ DATABASES = {
     }
 }
 
+AUTH_USER_MODEL = "users.CustomUser"
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators

@@ -16,9 +16,20 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path,include
+# from social_django.views import (
+#     SocialAuthView,
+#     SocialAuthorizeView,
+#     SocialDisconnectView,
+# )
+from social_django import views as social_views
+from .views import *
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('users/',include('users.urls')),
     path('',include('api.urls')),
     path('student/', include('students.urls')),
+    path('siteadmin/', include('siteadmin.urls')),
+    path('professor/', include('professors.urls')),
 ]

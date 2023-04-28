@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from .models import AcademicProgress
-from students.serializers import StudentSerializer 
+from students.models import *
+from students.serializers import *
+from professors.serializers import *
 
 class AcademicProgressSerializer(serializers.ModelSerializer):
     student = StudentSerializer(many=False)

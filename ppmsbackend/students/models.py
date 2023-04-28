@@ -3,7 +3,8 @@ from django.utils.timezone import now
 
 class Student(models.Model):
     id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=255)
+    first_name = models.CharField(max_length=255)
+    last_name = models.CharField(max_length=255)
     email = models.EmailField()
     rollno = models.CharField(max_length=15)
     department = models.CharField(max_length=255)
@@ -19,16 +20,28 @@ class Student(models.Model):
     joining_date = models.DateField(default=now,blank=True)
     PHD_STATUS_CHOICES = [
         ('A', 'Admitted'),
-        ('C', 'Coursework Completed'),
-        ('P', 'Proposal Submitted'),
-        ('T', 'Thesis Submitted'),
-        ('D', 'Degree Awarded'),
+        ('B', 'Coursework Completed'),
+        ('C', 'CE Completed'),
+        ('D', 'Proposal Submitted'),
+        ('E', 'JRF-SRF'),
+        ('F', 'OC Completed'),
+        ('G','VivaVoce Completed'),
+        ('H', 'Degree Awarded'),
         ('W', 'Withdrawn')
     ]
     phd_status = models.CharField(
         max_length=1,
         choices=PHD_STATUS_CHOICES,
         default='A'
+    )
+    PMRF_CHOICES = [
+        ('Y','Yes'),
+        ('N','No')
+    ]
+    is_pmrf = models.CharField(
+        max_length=1,
+        choices=PMRF_CHOICES,
+        default='N'
     )
 
 class StudentPersonalDetails(models.Model):
