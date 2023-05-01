@@ -1,6 +1,10 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:ppms/global/globals.dart';
+import 'dart:convert';
+import 'package:intl/intl.dart';
 
 String? _validateEmail(String? value) {
   if (value == null || value.isEmpty) {
@@ -9,6 +13,94 @@ String? _validateEmail(String? value) {
     return 'Please enter a valid email address';
   }
   return null;
+}
+
+Future<void> _login(String email, String password, context) async {
+  final headers = {'Content-Type': 'application/json'};
+  final body = jsonEncode({'email': email, 'password': password});
+
+  try {
+    final response = await http.post(Uri.parse('$apiUrl/users/login/'),
+        headers: headers, body: body);
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      if (data['message'] == "Logged in successfully") {
+        print('Login successful');
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text('Login successful'),
+              actions: <Widget>[
+                TextButton(
+                  child: Text('OK'),
+                  onPressed: () {
+                    // Navigate to the home screen
+                    Navigator.of(context).pop();
+                    global = Globals(
+                        email: email,
+                        role: data['role'],
+                        isloggedin: true,
+                        logintime: DateTime.now());
+                    if (data['role'] == "S") {
+                      print(global?.email);
+                      Navigator.pushNamed(
+                        context,
+                        '/student/home',
+                        arguments: global,
+                      );
+                    } else if (data['role'] == "A") {
+                      Navigator.pushNamed(context, '/admin/home');
+                    }
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      } else {
+        print('Invalid password');
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text('Invalid password'),
+              actions: <Widget>[
+                TextButton(
+                  child: Text('OK'),
+                  onPressed: () {
+                    // Navigate to the home screen
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      }
+    } else if (response.statusCode == 404) {
+      print('Unregistered User');
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('User not found'),
+            actions: <Widget>[
+              TextButton(
+                child: Text('OK'),
+                onPressed: () {
+                  // Navigate to the home screen
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
+  } catch (e) {
+    print(e);
+  }
 }
 
 class Login extends StatefulWidget {
@@ -184,7 +276,8 @@ class _LoginState extends State<Login> {
                                   Color.fromARGB(255, 111, 196, 229)),
                           onPressed: () {
                             if (_formKey.currentState!.validate()) {
-                              Navigator.pushReplacementNamed(context, '/login');
+                              _login(username, password, context);
+                              // Navigator.pushReplacementNamed(context, '/login');
                             }
                           },
                           child: Padding(

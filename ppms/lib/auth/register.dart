@@ -3,6 +3,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
+import 'dart:math';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:ppms/global/globals.dart';
 
 class Register extends StatefulWidget {
   const Register({Key? key}) : super(key: key);
@@ -71,16 +75,172 @@ class _RegisterState extends State<Register> {
   String firstname = '';
   String lastname = '';
   String rollno = '';
-  String gender = '';
+  String is_pmrf = '';
   String email = '';
   String mobileNo = '';
   String studentType = '';
-  DateTime doj = DateTime.now();
+  String doj = '';
   String password = '';
   String cnfPassword = '';
 
   final _formKey = GlobalKey<FormState>();
-  final format = DateFormat('yyyy-MM-dd');
+  String dateFormat = "yyyy-MM-dd";
+  bool emailVerified = false;
+  TextEditingController _otpController = TextEditingController();
+  bool mailSent = false;
+
+  Future<void> sendEmail(String otp, String email) async {
+    final response = await http.post(Uri.parse('$apiUrl/emails/send-email/'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(<String, String>{
+          'subject': 'OTP for PPMS Email Verification',
+          'message': 'Your OTP for sign up in PPMS is $otp.',
+          'to': email,
+        }));
+
+    if (response.statusCode == 200) {
+      print('Email sent successfully');
+      setState(() {
+        mailSent = true;
+      });
+    } else {
+      print(response.body);
+    }
+  }
+
+  void verify(String email) async {
+    print(email);
+    setState(() {
+      mailSent = false;
+    });
+    Random random = Random();
+
+    // Generate a random number between 0 to 999999
+    int randomNum = random.nextInt(1000000);
+
+    // Pad the random number with zeros to make it a six-digit number
+    String sixDigitNum = randomNum.toString().padLeft(6, '0');
+
+    showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return Center(
+            child: CircularProgressIndicator(),
+          );
+        });
+
+    await sendEmail(sixDigitNum, email);
+
+    Navigator.pop(context);
+
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Enter OTP sent to Mail'),
+          content: TextFormField(
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(
+              hintText: 'Enter OTP',
+            ),
+            validator: (value) {
+              if (value!.isEmpty) {
+                return 'Please enter OTP';
+              }
+              return null;
+            },
+            controller: _otpController,
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Submit'),
+              onPressed: () {
+                if (sixDigitNum == _otpController.text) {
+                  setState(() {
+                    emailVerified = true;
+                  });
+                  Navigator.of(context).pop();
+                } else {
+                  _otpController.clear();
+                  Navigator.of(context).pop();
+                  showDialog<void>(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: Text('Wrong Otp'),
+                        actions: <Widget>[
+                          TextButton(
+                            child: Text('Close'),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                }
+              },
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text('Close'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> submitRegistrationForm() async {
+    // Submit user registration data
+    final userRegistrationResponse = await http.post(
+      Uri.parse('$apiUrl/users/register/'),
+      body: {'email': email, 'password': password, 'role': "S"},
+    );
+
+    if (userRegistrationResponse.statusCode != 200) {
+      // Handle error
+      print(
+          'User registration failed with status code ${userRegistrationResponse.body}');
+      return;
+    }
+    print(doj.substring(0, 10));
+
+    // Submit student registration data
+    final studentRegistrationResponse = await http.post(
+      Uri.parse('$apiUrl/student/'),
+      body: {
+        'first_name': firstname,
+        'last_name': lastname,
+        'is_pmrf': is_pmrf,
+        'department': "CSE",
+        'admission_mode': studentType,
+        'email': email,
+        'rollno': email.split("@")[0],
+        'mobileNo': mobileNo,
+        'joining_date': doj.substring(0, 10),
+        'phd_status': "A",
+      },
+    );
+
+    if (studentRegistrationResponse.statusCode != 201) {
+      // Handle error
+      print(
+          'Student registration failed with status code ${studentRegistrationResponse.body}');
+      return;
+    }
+
+    // Registration successful
+    print('Registration successful!');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -170,7 +330,7 @@ class _RegisterState extends State<Register> {
                               // The validator receives the text that the user has entered.
                               validator: _validateFirstName,
 
-                              onSaved: (value) {
+                              onChanged: (value) {
                                 setState(() {
                                   firstname = value.toString();
                                 });
@@ -213,7 +373,7 @@ class _RegisterState extends State<Register> {
                                 ),
                               ),
                               validator: _validateLastName,
-                              onSaved: (value) {
+                              onChanged: (value) {
                                 setState(() {
                                   lastname = value.toString();
                                 });
@@ -257,7 +417,7 @@ class _RegisterState extends State<Register> {
                                 ),
                               ),
                               validator: _validateRollNo,
-                              onSaved: (value) {
+                              onChanged: (value) {
                                 setState(() {
                                   rollno = value.toString();
                                 });
@@ -277,7 +437,7 @@ class _RegisterState extends State<Register> {
                             Padding(
                               padding: EdgeInsets.only(bottom: 8.0),
                               child: Text(
-                                'Gender',
+                                'PMRF',
                                 style: TextStyle(
                                   color: Colors.grey[700],
                                   fontSize: 16.0,
@@ -285,13 +445,13 @@ class _RegisterState extends State<Register> {
                               ),
                             ),
                             DropdownButtonFormField<String>(
-                              value: gender,
+                              value: is_pmrf,
                               decoration: InputDecoration(
                                 floatingLabelBehavior:
                                     FloatingLabelBehavior.always,
                                 filled: true,
                                 fillColor: Colors.white,
-                                hintText: 'Select Gender',
+                                hintText: 'PMRF',
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(8),
                                   borderSide: BorderSide.none,
@@ -300,24 +460,20 @@ class _RegisterState extends State<Register> {
                               items: [
                                 DropdownMenuItem<String>(
                                   value: '',
-                                  child: Text('Select gender'),
+                                  child: Text('Select status'),
                                 ),
                                 DropdownMenuItem<String>(
-                                  value: 'Male',
-                                  child: Text('Male'),
+                                  value: 'Y',
+                                  child: Text('Yes'),
                                 ),
                                 DropdownMenuItem<String>(
-                                  value: 'Female',
-                                  child: Text('Female'),
-                                ),
-                                DropdownMenuItem<String>(
-                                  value: 'Others',
-                                  child: Text('Others'),
+                                  value: 'N',
+                                  child: Text('No'),
                                 ),
                               ],
                               onChanged: (value) {
                                 setState(() {
-                                  gender = value.toString();
+                                  is_pmrf = value.toString();
                                 });
                               },
                             ),
@@ -365,15 +521,15 @@ class _RegisterState extends State<Register> {
                                   child: Text('Select an option'),
                                 ),
                                 DropdownMenuItem<String>(
-                                  value: 'Regular',
+                                  value: 'R',
                                   child: Text('Regular'),
                                 ),
                                 DropdownMenuItem<String>(
-                                  value: 'External',
+                                  value: 'E',
                                   child: Text('External'),
                                 ),
                                 DropdownMenuItem<String>(
-                                  value: 'Project',
+                                  value: 'P',
                                   child: Text('Project'),
                                 ),
                               ],
@@ -405,6 +561,7 @@ class _RegisterState extends State<Register> {
                               ),
                             ),
                             DateTimeField(
+                              format: DateFormat(dateFormat),
                               decoration: InputDecoration(
                                 floatingLabelBehavior:
                                     FloatingLabelBehavior.always,
@@ -427,7 +584,6 @@ class _RegisterState extends State<Register> {
                                       color: Colors.grey),
                                 ),
                               ),
-                              format: format,
                               onShowPicker: (context, currentValue) async {
                                 final date = await showDatePicker(
                                     context: context,
@@ -436,10 +592,10 @@ class _RegisterState extends State<Register> {
                                     lastDate: DateTime(2100));
                                 if (date != null) {
                                   setState(() {
-                                    doj = date;
+                                    doj = date.toString();
                                   });
                                 }
-                                return doj;
+                                return date;
                               },
                             ),
                           ],
@@ -478,9 +634,14 @@ class _RegisterState extends State<Register> {
                                   borderRadius: BorderRadius.circular(8),
                                   borderSide: BorderSide.none,
                                 ),
+                                suffixIcon: emailVerified
+                                    ? Icon(Icons.check)
+                                    : TextButton(
+                                        onPressed: () => verify(email),
+                                        child: Text('verify')),
                               ),
                               validator: _validateEmail,
-                              onSaved: (value) {
+                              onChanged: (value) {
                                 setState(() {
                                   email = value.toString();
                                 });
@@ -520,7 +681,7 @@ class _RegisterState extends State<Register> {
                                 ),
                               ),
                               validator: _validateMobile,
-                              onSaved: (value) {
+                              onChanged: (value) {
                                 setState(() {
                                   _validateMobileT = true;
                                 });
@@ -569,10 +730,10 @@ class _RegisterState extends State<Register> {
                               ),
                               obscureText: true,
                               obscuringCharacter: '•',
-                              onSaved: (value) {
-                                // setState(() {
-                                //   password = value.toString();
-                                // });
+                              onChanged: (value) {
+                                setState(() {
+                                  password = value.toString();
+                                });
                                 setState(() {
                                   _previousTextController.text =
                                       value.toString();
@@ -617,16 +778,15 @@ class _RegisterState extends State<Register> {
                               validator: (String? value) {
                                 if (value == null || value.isEmpty) {
                                   return 'Enter valid password';
-                                } else if (!identical(
-                                    value, _previousTextController.text)) {
+                                } else if (!identical(value, password)) {
                                   print(value);
                                   print('@');
-                                  print(_previousTextController.text);
+                                  print(password);
                                   return 'password mismatch';
                                 }
                                 return null;
                               },
-                              onSaved: (value) {
+                              onChanged: (value) {
                                 setState(() {
                                   cnfPassword = value.toString();
                                 });
@@ -654,7 +814,45 @@ class _RegisterState extends State<Register> {
                     _validateEmailT = true;
                   });
                   if (_formKey.currentState!.validate()) {
-                    Navigator.pushReplacementNamed(context, '/login');
+                    if (emailVerified) {
+                      submitRegistrationForm();
+                      showDialog<void>(
+                        context: context,
+                        barrierDismissible: false,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: Text('Registration Successful'),
+                            actions: <Widget>[
+                              TextButton(
+                                child: Text('OK'),
+                                onPressed: () {
+                                  Navigator.pushReplacementNamed(
+                                      context, '/login');
+                                },
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    } else {
+                      showDialog<void>(
+                        context: context,
+                        barrierDismissible: false,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: Text('Email Not verified'),
+                            actions: <Widget>[
+                              TextButton(
+                                child: Text('Close'),
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    }
                   }
                 },
                 child: Padding(

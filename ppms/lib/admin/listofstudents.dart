@@ -1,182 +1,337 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:data_table_2/data_table_2.dart';
 
-import 'package:ppms/admin/datasourcestudent.dart';
+enum SortDirection { ascending, descending }
 
-class PaginatedDataTableDemo extends StatefulWidget {
-  const PaginatedDataTableDemo({super.key});
+class SortState {
+  SortDirection sortDirection;
+  int columnIndex;
 
-  @override
-  PaginatedDataTableDemoState createState() => PaginatedDataTableDemoState();
+  SortState(this.sortDirection, this.columnIndex);
 }
 
-class PaginatedDataTableDemoState extends State<PaginatedDataTableDemo>
-    with RestorationMixin {
-  final RestorableDessertSelections _dessertSelections =
-      RestorableDessertSelections();
-  final RestorableInt _rowIndex = RestorableInt(0);
-  final RestorableInt _rowsPerPage =
-      RestorableInt(PaginatedDataTable.defaultRowsPerPage);
-  final RestorableBool _sortAscending = RestorableBool(true);
-  final RestorableIntN _sortColumnIndex = RestorableIntN(null);
-  late DessertDataSource _dessertsDataSource;
-  bool initialized = false;
+class MyDataTable extends StatefulWidget {
+  const MyDataTable({Key? key}) : super(key: key);
 
   @override
-  String get restorationId => 'paginated_data_table_demo';
+  _MyDataTableState createState() => _MyDataTableState();
+}
 
-  @override
-  void restoreState(RestorationBucket? oldBucket, bool initialRestore) {
-    registerForRestoration(_dessertSelections, 'selected_row_indices');
-    registerForRestoration(_rowIndex, 'current_row_index');
-    registerForRestoration(_rowsPerPage, 'rows_per_page');
-    registerForRestoration(_sortAscending, 'sort_ascending');
-    registerForRestoration(_sortColumnIndex, 'sort_column_index');
+class _MyDataTableState extends State<MyDataTable> {
+  final String apiUrl = 'http://127.0.0.1:8000/student/detailed-data';
+  int _rowsPerPage = 10;
+  int _totalItems = 0;
+  List<Student> _dataList = [];
 
-    if (!initialized) {
-      _dessertsDataSource = DessertDataSource(context);
-      initialized = true;
-    }
-    switch (_sortColumnIndex.value) {
-      case 0:
-        _dessertsDataSource.sort<String>((d) => d.name, _sortAscending.value);
-        break;
-      case 1:
-        _dessertsDataSource.sort<num>((d) => d.calories, _sortAscending.value);
-        break;
-      case 2:
-        _dessertsDataSource.sort<num>((d) => d.fat, _sortAscending.value);
-        break;
-      case 3:
-        _dessertsDataSource.sort<num>((d) => d.carbs, _sortAscending.value);
-        break;
-      case 4:
-        _dessertsDataSource.sort<num>((d) => d.protein, _sortAscending.value);
-        break;
-      case 5:
-        _dessertsDataSource.sort<num>((d) => d.sodium, _sortAscending.value);
-        break;
-      case 6:
-        _dessertsDataSource.sort<num>((d) => d.calcium, _sortAscending.value);
-        break;
-      case 7:
-        _dessertsDataSource.sort<num>((d) => d.iron, _sortAscending.value);
-        break;
-    }
-    _dessertsDataSource.updateSelectedDesserts(_dessertSelections);
-    _dessertsDataSource.addListener(_updateSelectedDessertRowListener);
-  }
+  Future<void> _getData() async {
+    var response = await http.get(Uri.parse(apiUrl));
+    var data = jsonDecode(response.body);
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (!initialized) {
-      _dessertsDataSource = DessertDataSource(context);
-      initialized = true;
-    }
-    _dessertsDataSource.addListener(_updateSelectedDessertRowListener);
-  }
-
-  void _updateSelectedDessertRowListener() {
-    _dessertSelections.setDessertSelections(_dessertsDataSource.desserts);
-  }
-
-  void sort<T>(
-    Comparable<T> Function(Dessert d) getField,
-    int columnIndex,
-    bool ascending,
-  ) {
-    _dessertsDataSource.sort<T>(getField, ascending);
     setState(() {
-      _sortColumnIndex.value = columnIndex;
-      _sortAscending.value = ascending;
+      _dataList = (data as List).map((item) => Student.fromJson(item)).toList();
     });
   }
 
+  late List<SortState> _sortStates;
+
+  void sort<T>(Comparable<T> Function(Student d) getField, int columnIndex) {
+    final sortState = _sortStates[columnIndex];
+    if (sortState.sortDirection == SortDirection.ascending) {
+      _dataList.sort((a, b) {
+        final aValue = getField(a);
+        final bValue = getField(b);
+        final comparison = Comparable.compare(aValue, bValue);
+        return comparison;
+      });
+      _sortStates[columnIndex] =
+          SortState(SortDirection.descending, columnIndex);
+    } else {
+      _dataList.sort((a, b) {
+        final aValue = getField(a);
+        final bValue = getField(b);
+        final comparison = Comparable.compare(bValue, aValue);
+        return comparison;
+      });
+      _sortStates[columnIndex] =
+          SortState(SortDirection.ascending, columnIndex);
+    }
+    setState(() {});
+  }
+
   @override
-  void dispose() {
-    _rowsPerPage.dispose();
-    _sortColumnIndex.dispose();
-    _sortAscending.dispose();
-    _dessertsDataSource.removeListener(_updateSelectedDessertRowListener);
-    _dessertsDataSource.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+    _getData();
+    _sortStates = List.filled(8, SortState(SortDirection.ascending, -1));
   }
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      restorationId: 'paginated_data_table_list_view',
-      padding: const EdgeInsets.all(16),
-      children: [
-        PaginatedDataTable(
-          header: const Text('PaginatedDataTable'),
-          rowsPerPage: _rowsPerPage.value,
-          onRowsPerPageChanged: (value) {
-            setState(() {
-              _rowsPerPage.value = value!;
-            });
-          },
-          initialFirstRowIndex: _rowIndex.value,
-          onPageChanged: (rowIndex) {
-            setState(() {
-              _rowIndex.value = rowIndex;
-            });
-          },
-          sortColumnIndex: _sortColumnIndex.value,
-          sortAscending: _sortAscending.value,
-          onSelectAll: _dessertsDataSource.selectAll,
-          columns: [
-            DataColumn(
-              label: const Text('Desert'),
-              onSort: (columnIndex, ascending) =>
-                  sort<String>((d) => d.name, columnIndex, ascending),
-            ),
-            DataColumn(
-              label: const Text('Calories'),
-              numeric: true,
-              onSort: (columnIndex, ascending) =>
-                  sort<num>((d) => d.calories, columnIndex, ascending),
-            ),
-            DataColumn(
-              label: const Text('Fat (gm)'),
-              numeric: true,
-              onSort: (columnIndex, ascending) =>
-                  sort<num>((d) => d.fat, columnIndex, ascending),
-            ),
-            DataColumn(
-              label: const Text('Carbs (gm)'),
-              numeric: true,
-              onSort: (columnIndex, ascending) =>
-                  sort<num>((d) => d.carbs, columnIndex, ascending),
-            ),
-            DataColumn(
-              label: const Text('Protein (gm)'),
-              numeric: true,
-              onSort: (columnIndex, ascending) =>
-                  sort<num>((d) => d.protein, columnIndex, ascending),
-            ),
-            DataColumn(
-              label: const Text('Sodium (mg)'),
-              numeric: true,
-              onSort: (columnIndex, ascending) =>
-                  sort<num>((d) => d.sodium, columnIndex, ascending),
-            ),
-            DataColumn(
-              label: const Text('Calcium (%)'),
-              numeric: true,
-              onSort: (columnIndex, ascending) =>
-                  sort<num>((d) => d.calcium, columnIndex, ascending),
-            ),
-            DataColumn(
-              label: const Text('Iron (%)'),
-              numeric: true,
-              onSort: (columnIndex, ascending) =>
-                  sort<num>((d) => d.iron, columnIndex, ascending),
-            ),
-          ],
-          source: _dessertsDataSource,
+    return PaginatedDataTable2(
+      showFirstLastButtons: true,
+      availableRowsPerPage: [10],
+      columns: [
+        DataColumn(
+          label: Row(
+            children: [
+              Text('Name'),
+              _sortStates[0].columnIndex == 0
+                  ? _sortStates[0].sortDirection == SortDirection.ascending
+                      ? Icon(Icons.arrow_upward)
+                      : Icon(Icons.arrow_downward)
+                  : SizedBox(
+                      width: 0,
+                    ),
+            ],
+          ),
+          onSort: (columnIndex, ascending) =>
+              sort<String>((d) => d.firstName + " " + d.lastName, columnIndex),
+        ),
+        DataColumn(
+          label: Row(
+            children: [
+              Text('Roll No'),
+              _sortStates[1].columnIndex == 1
+                  ? _sortStates[1].sortDirection == SortDirection.ascending
+                      ? Icon(Icons.arrow_drop_up)
+                      : Icon(Icons.arrow_drop_down)
+                  : SizedBox(),
+            ],
+          ),
+          onSort: (columnIndex, ascending) =>
+              sort<String>((d) => d.rollno, columnIndex),
+        ),
+        DataColumn(
+          label: Row(
+            children: [
+              Text('Batch'),
+              _sortStates[2].columnIndex == 2
+                  ? _sortStates[2].sortDirection == SortDirection.ascending
+                      ? Icon(Icons.arrow_drop_up)
+                      : Icon(Icons.arrow_drop_down)
+                  : SizedBox(),
+            ],
+          ),
+          onSort: (columnIndex, ascending) =>
+              sort<String>((d) => d.personalDetails.batch, columnIndex),
+        ),
+        DataColumn(
+          label: Row(
+            children: [
+              Text('Gender'),
+              _sortStates[3].columnIndex == 3
+                  ? _sortStates[3].sortDirection == SortDirection.ascending
+                      ? Icon(Icons.arrow_drop_up)
+                      : Icon(Icons.arrow_drop_down)
+                  : SizedBox(
+                      width: 0,
+                    ),
+            ],
+          ),
+          onSort: (columnIndex, ascending) =>
+              sort<String>((d) => d.personalDetails.gender, columnIndex),
+        ),
+        DataColumn(
+          label: Row(
+            children: [
+              Text('Pwd Status'),
+              _sortStates[4].columnIndex == 4
+                  ? _sortStates[4].sortDirection == SortDirection.ascending
+                      ? Icon(Icons.arrow_drop_up)
+                      : Icon(Icons.arrow_drop_down)
+                  : SizedBox(),
+            ],
+          ),
+          onSort: (columnIndex, ascending) =>
+              sort<String>((d) => d.personalDetails.pwdStatus, columnIndex),
+        ),
+        DataColumn(
+          label: Row(
+            children: [
+              Text('PhD status'),
+              _sortStates[5].columnIndex == 5
+                  ? _sortStates[5].sortDirection == SortDirection.ascending
+                      ? Icon(Icons.arrow_drop_up)
+                      : Icon(Icons.arrow_drop_down)
+                  : SizedBox(),
+            ],
+          ),
+          onSort: (columnIndex, ascending) =>
+              sort<String>((d) => d.phdStatus, columnIndex),
+        ),
+        DataColumn(
+          label: Row(
+            children: [
+              Text('Admission Mode'),
+              _sortStates[6].columnIndex == 6
+                  ? _sortStates[6].sortDirection == SortDirection.ascending
+                      ? Icon(Icons.arrow_drop_up)
+                      : Icon(Icons.arrow_drop_down)
+                  : SizedBox(),
+            ],
+          ),
+          onSort: (columnIndex, ascending) =>
+              sort<String>((d) => d.admissionMode, columnIndex),
+        ),
+        DataColumn(
+          label: Row(
+            children: [
+              Text('Joining Date'),
+              _sortStates[7].columnIndex == 7
+                  ? _sortStates[7].sortDirection == SortDirection.ascending
+                      ? Icon(Icons.arrow_drop_up)
+                      : Icon(Icons.arrow_drop_down)
+                  : SizedBox(),
+            ],
+          ),
+          onSort: (columnIndex, ascending) =>
+              sort<String>((d) => d.joinDate, columnIndex),
         ),
       ],
+      header: Text('My Data Table'),
+      rowsPerPage: _rowsPerPage,
+      onRowsPerPageChanged: (value) {
+        setState(() {
+          //print(value);
+          _rowsPerPage = value!;
+          _getData();
+        });
+      },
+      onPageChanged: (value) {
+        setState(() {
+          _getData();
+        });
+      },
+      source: MyDataTableSource(_dataList),
+      actions: [
+        IconButton(
+          icon: Icon(Icons.refresh),
+          onPressed: () {
+            setState(() {
+              _getData();
+            });
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class MyDataTableSource extends DataTableSource {
+  final List<Student> dataList;
+
+  MyDataTableSource(this.dataList);
+
+  @override
+  DataRow? getRow(int index) {
+    if (index >= dataList.length) {
+      return null;
+    }
+    final item = dataList[index];
+    return DataRow.byIndex(index: index, cells: item.toDataCells());
+  }
+
+  @override
+  bool get isRowCountApproximate => false;
+
+  @override
+  int get rowCount => dataList.length;
+
+  @override
+  int get selectedRowCount => 0;
+}
+
+class StudentPersonalDetails {
+  String gender;
+  String mobile;
+  String batch;
+  String dob;
+  String pwdStatus;
+  String state;
+  StudentPersonalDetails({
+    required this.gender,
+    required this.mobile,
+    required this.batch,
+    required this.dob,
+    required this.pwdStatus,
+    required this.state,
+  });
+}
+
+class Student {
+  String firstName;
+  String lastName;
+  String rollno;
+  String admissionMode;
+  String joinDate;
+  String isPMRF;
+  String phdStatus;
+  StudentPersonalDetails personalDetails;
+
+  Student({
+    required this.firstName,
+    required this.lastName,
+    required this.rollno,
+    required this.admissionMode,
+    required this.joinDate,
+    required this.isPMRF,
+    required this.phdStatus,
+    required this.personalDetails,
+  });
+
+  List<DataCell> toDataCells() {
+    return [
+      DataCell(Text(firstName + ' ' + lastName)),
+      DataCell(Text(rollno)),
+      DataCell(Text(personalDetails.batch)),
+      DataCell(Text(personalDetails.gender)),
+      DataCell(Text(personalDetails.pwdStatus)),
+      DataCell(Text(phdStatus)),
+      DataCell(Text(admissionMode)),
+      DataCell(Text(joinDate)),
+    ];
+  }
+
+  factory Student.fromJson(Map<String, dynamic> json) {
+    final studentJson = json['student'];
+    final personalDetailsJson = json;
+
+    //print(studentJson['first_name']);
+
+    // Extracting data from JSON
+    final firstName = studentJson['first_name'];
+    final lastName = studentJson['last_name'];
+    final admissionMode = studentJson['admission_mode'];
+    final joinDate = studentJson['joining_date'];
+    final isPMRF = studentJson['is_pmrf'];
+    final phdStatus = studentJson['phd_status'];
+    final rollno = studentJson['rollno'];
+    final gender = personalDetailsJson['gender'];
+    final mobile = personalDetailsJson['contact_number'];
+    final batch = personalDetailsJson['joining_batch'];
+    final dob = personalDetailsJson['date_of_birth'];
+    final pwdStatus = personalDetailsJson['pwd_status'];
+    final state = personalDetailsJson['state'];
+
+    // Creating and returning a new Student object
+    return Student(
+      firstName: firstName,
+      lastName: lastName,
+      admissionMode: admissionMode,
+      joinDate: joinDate,
+      isPMRF: isPMRF,
+      phdStatus: phdStatus,
+      rollno: rollno,
+      personalDetails: StudentPersonalDetails(
+        gender: gender,
+        mobile: mobile,
+        batch: batch,
+        dob: dob,
+        pwdStatus: pwdStatus,
+        state: state,
+      ),
     );
   }
 }
