@@ -21,15 +21,15 @@ from django.urls import path,include
 #     SocialAuthorizeView,
 #     SocialDisconnectView,
 # )
-from social_django import views as social_views
+# from social_django import views as social_views
 from .views import *
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('users/',include('users.urls')),
-    path('',include('api.urls')),
     path('student/', include('students.urls')),
     path('siteadmin/', include('siteadmin.urls')),
     path('professor/', include('professors.urls')),
+    path('emails/', include('emails.urls')),
 ]

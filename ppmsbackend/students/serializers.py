@@ -17,7 +17,7 @@ class StudentNameSerializer(serializers.ModelSerializer):
         return f"{obj.first_name} {obj.last_name}"
 
 class StudentPersonalDetailsSerializer(serializers.ModelSerializer):
-    student = StudentSerializer(many=False)
+    student = StudentSerializer(many=False,read_only=True)
     class Meta:
         model = StudentPersonalDetails
         fields = '__all__'

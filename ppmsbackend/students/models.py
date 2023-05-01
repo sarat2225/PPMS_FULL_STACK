@@ -17,7 +17,7 @@ class Student(models.Model):
         choices=ADMISSION_MODE_CHOICES,
         default='R'
     )
-    joining_date = models.DateField(default=now,blank=True)
+    joining_date = models.DateField()
     PHD_STATUS_CHOICES = [
         ('A', 'Admitted'),
         ('B', 'Coursework Completed'),
@@ -80,5 +80,5 @@ class StudentPersonalDetails(models.Model):
         default='N'
     )
     state = models.CharField(max_length=100)
-    personal_email = models.EmailField()
+    # personal_email = models.EmailField(null=True)
     contact_number = models.CharField(max_length=15)

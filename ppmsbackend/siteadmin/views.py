@@ -1,4 +1,5 @@
 from rest_framework import generics, pagination
+from rest_framework.response import Response
 from django.db.models.functions import ExtractYear
 from django.http import JsonResponse
 from .models import AcademicProgress
@@ -57,7 +58,7 @@ class AllStudentList(generics.ListCreateAPIView):
 
         return queryset
 
-class DetailedStudentsData(generics.ListCreateAPIView):
+class DetailedAllStudentsData(generics.ListCreateAPIView):
     serializer_class = StudentPersonalDetailsSerializer
     pagination_class = CustomPagination
 
@@ -100,6 +101,25 @@ class DetailedStudentsData(generics.ListCreateAPIView):
             queryset = queryset.filter(pwd_status=pwd_status)
 
         return queryset
+
+class AcademicProgressByStudent(generics.RetrieveUpdateDestroyAPIView):
+    queryset = AcademicProgress.objects.all()
+    serializer_class = AcademicProgressSerializer
+    lookup_field = 'student__rollno'
+
+    def get_object(self):
+        queryset = self.filter_queryset(self.get_queryset())
+        obj = queryset.get(student__rollno=self.kwargs['rollno'])
+        self.check_object_permissions(self.request, obj)
+        return obj
+    
+    def put(self, request):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(serializer.data)
+
 
 class AllProfessorList(generics.ListCreateAPIView):
     queryset = Professor.objects.all()

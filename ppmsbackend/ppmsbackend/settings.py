@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_crontab',
     'django_filters',
+    'corsheaders',
+    'emails',
     'professors',
     'students',
     'siteadmin',
@@ -63,7 +65,15 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'cs19btech11003@iith.ac.in'
+EMAIL_HOST_PASSWORD = 'kvkpwcxpwqvngihx'
 
 ROOT_URLCONF = 'ppmsbackend.urls'
 

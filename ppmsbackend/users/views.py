@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from django.contrib.auth import login, logout
 from .models import CustomUser
 from .serializers import CustomUserSerializer,LogSerializer
+from django.shortcuts import get_object_or_404
 
 
 
@@ -26,7 +27,7 @@ class LoginView(generics.GenericAPIView):
     def post(self, request):
         email = request.data.get('email')
         password = request.data.get('password')
-        user = CustomUser.objects.get(email=email)
+        user = get_object_or_404(CustomUser, email=email)
         if user.check_password(password):
             login(request, user)
             return Response({'message': 'Logged in successfully','role': user.role})

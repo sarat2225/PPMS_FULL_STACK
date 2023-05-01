@@ -5,7 +5,7 @@ from students.serializers import *
 from professors.serializers import *
 
 class AcademicProgressSerializer(serializers.ModelSerializer):
-    student = StudentSerializer(many=False)
+    student = StudentSerializer(many=False,read_only=True)
     class Meta:
         model = AcademicProgress
         fields = '__all__'
