@@ -1,4 +1,4 @@
-from rest_framework import generics
+from rest_framework import generics,status
 from rest_framework import permissions
 from rest_framework.response import Response
 from django.contrib.auth import login, logout
@@ -32,7 +32,7 @@ class LoginView(generics.GenericAPIView):
             login(request, user)
             return Response({'message': 'Logged in successfully','role': user.role})
         else:
-            return Response({'error': 'Invalid email or password'})
+            return Response({'error': 'Invalid email or password'},status=status.HTTP_400_BAD_REQUEST)
 
 class LogoutView(generics.GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -40,4 +40,4 @@ class LogoutView(generics.GenericAPIView):
 
     def post(self, request):
         logout(request)
-        return Response({'message': 'Logged out successfully'})
+        return Response({'message': 'Logged out successfully'},status=status.HTTP_200_OK)

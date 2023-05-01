@@ -1,11 +1,13 @@
-from django.test import TestCase
+from django.test import TestCase,Client
 from .models import CustomUser
-from .serializers import CustomUserSerializer
+from .serializers import CustomUserSerializer,LogSerializer
 from django.db.utils import IntegrityError
-from rest_framework.test import APITestCase
+from rest_framework.test import APITestCase,APIClient
 from rest_framework import status
 from django.urls import reverse
+import json
 
+# Testing CustomUser model and CustomUserSerializer
 class CustomUserTest(TestCase):
     def setUp(self):
         self.serializer=CustomUserSerializer
@@ -15,24 +17,29 @@ class CustomUserTest(TestCase):
         self.assertEqual(self.user.email,'test@iith.ac.in')
         self.assertTrue(self.user.check_password('testpassword'))
         self.assertEqual(self.user.role,'S')
-
+    
+    #Valueerror is raised when email is not given in the data
     def test_without_email(self):
         with self.assertRaises(ValueError):
             self.user=self.serializer.create(self.serializer,{'password':'testpassword','role':'S'})
-
+    
+    #Valueerror is raised when password is not given in the data
     def test_without_password(self):
         with self.assertRaises(ValueError):
             self.user=self.serializer.create(self.serializer,{'email':'test@iith.ac.in','role':'S'})
 
+    #Valueerror is raised when role is not given in the data
     def test_without_role(self):
         with self.assertRaises(ValueError):
             self.user=self.serializer.create(self.serializer,{'password':'testpassword','email':'test@iith.ac.in'})
 
+    #Integrityerror is raised when email has been already used 
     def test_duplicate_email(self):
         self.user=self.serializer.create(self.serializer,{'email':'test@iith.ac.in','password':'testpassword','role':'S'})
         with self.assertRaises(IntegrityError):
             self.user2=self.serializer.create(self.serializer,{'email':'test@iith.ac.in','password':'testpassword','role':'S'})
 
+# Testing RegisterView
 class RegisterViewTestCase(APITestCase):
     def setUp(self):
         self.serializer=CustomUserSerializer
@@ -45,6 +52,7 @@ class RegisterViewTestCase(APITestCase):
         self.assertEqual(CustomUser.objects.count(), 1)
         self.assertEqual(CustomUser.objects.get().email, 'test@iith.ac.in')
 
+    # User cannot be created using existing email.
     def test_create_user_with_existing_email(self):
         #user = CustomUser.objects.create_user(email='testuser@test.com', password='testpass', role='S')
         self.user=self.serializer.create(self.serializer,{'email':'test@iith.ac.in','password':'testpassword','role':'S'})
@@ -55,6 +63,7 @@ class RegisterViewTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(CustomUser.objects.count(), 1)
 
+    # Role should be valied.
     def test_create_user_with_invalid_role(self):
         url = reverse('users:register')
         data = {'email': 'test@iith.ac.in', 'password': 'testpassword', 'role': 'X'}
@@ -62,13 +71,13 @@ class RegisterViewTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(CustomUser.objects.count(), 0)
 
+client=Client()
+
 class LoginViewTestCase(TestCase):
     def setUp(self):
-        self.user = CustomUser.objects.create_user(
-            email='test@iith.ac.in',
-            password='testpassword',
-            role='P'
-        )
+        self.serializerlogin=LogSerializer
+        self.user=self.serializerlogin.create(self.serializerlogin,{'email':'test@iith.ac.in','password':'testpassword','role':'S'})
+        
         self.valid_payload = {
             'email': 'test@iith.ac.in',
             'password': 'testpassword',
@@ -80,7 +89,7 @@ class LoginViewTestCase(TestCase):
 
     def test_login_user_with_valid_credentials(self):
         response = client.post(
-            reverse('login'),
+            reverse('users:login'),
             data=json.dumps(self.valid_payload),
             content_type='application/json'
         )
@@ -88,7 +97,7 @@ class LoginViewTestCase(TestCase):
     
     def test_login_user_with_invalid_credentials(self):
         response = client.post(
-            reverse('login'),
+            reverse('users:login'),
             data=json.dumps(self.invalid_payload),
             content_type='application/json'
         )
@@ -96,13 +105,12 @@ class LoginViewTestCase(TestCase):
 
 class LogoutViewTestCase(TestCase):
     def setUp(self):
-        self.user = CustomUser.objects.create_user(
-            email='test@iith.ac.in',
-            password='testpassword',
-            role='P'
-        )
+        self.serializerlogout=LogSerializer
+        self.user=self.serializerlogout.create(self.serializerlogout,{'email':'test@iith.ac.in','password':'testpassword','role':'S'})
+        
 
     def test_logout_user(self):
-        client.login(email='test@iith.ac.in', password='testpassword')
-        response = client.post(reverse('logout'))
+        client=APIClient()
+        client.force_authenticate(user=self.user)
+        response = client.post(reverse('users:logout'))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
