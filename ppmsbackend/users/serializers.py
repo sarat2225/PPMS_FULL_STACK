@@ -10,6 +10,12 @@ class CustomUserSerializer(serializers.ModelSerializer):
         }
 
     def create(self, validated_data):
+        if 'email' not in validated_data:
+            raise ValueError("Email attribute must be filled")
+        if 'password' not in validated_data:
+            raise ValueError("Password attribute must be filled")
+        if 'role' not in validated_data:
+            raise ValueError("Role attribute must be filled")
         user = CustomUser.objects.create_user(
             email=validated_data['email'],
             username=validated_data['email'],

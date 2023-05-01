@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 
 class CustomUser(AbstractUser):
-    email = models.EmailField(unique=True)
+    email = models.EmailField(unique=True,blank=False)
     password = models.CharField(max_length=128)
     ROLE_CHOICES = [
         ('S', 'Student'),
