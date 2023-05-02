@@ -128,11 +128,7 @@ class AllProfessorList(generics.ListCreateAPIView):
 class AllDCList(generics.ListCreateAPIView):
     queryset = DoctoralCommittee.objects.all()
     serializer_class = DoctoralCommitteeSerializer
-    pagination_class = CustomPagination
-
-# def get_queryset(self):
-#         return super().get_queryset()
-    
+    pagination_class = CustomPagination    
 
 class Dashboard(generics.ListCreateAPIView):
     
@@ -154,7 +150,6 @@ class Dashboard(generics.ListCreateAPIView):
 
         students_joining_by_year = Student.objects.annotate(year=ExtractYear('joining_date')).values('year').annotate(count=models.Count('id')).order_by('year')
         students_passed_out_by_year = AcademicProgress.objects.annotate(year=ExtractYear('convocation_date')).values('year').annotate(count=models.Count('student__id')).order_by('year')
-        # Create a dictionary to hold the summary data
         summary_data = {
             'num_students_passed_out': num_students_passed_out,
             'num_students_with_pmrf': num_students_with_pmrf,
@@ -169,6 +164,5 @@ class Dashboard(generics.ListCreateAPIView):
             'YearlyJoiningStudentCount': list(students_joining_by_year),
             'YearlyPassedOutStudentCount': list(students_passed_out_by_year),
         }
-
-        # Return the summary data as a JSON response
+        
         return JsonResponse(summary_data)

@@ -8,14 +8,9 @@ class ProfessorSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class ProfessorNameSerializer(serializers.ModelSerializer):
-    # name = serializers.SerializerMethodField()
-
     class Meta:
         model = Professor
         fields = ['first_name', 'last_name']
-
-    # def get_name(self, obj):
-    #     return f"{obj.first_name} {obj.last_name}"
 
 class DoctoralCommitteeSerializer(serializers.ModelSerializer):
     student = StudentNameSerializer(many=False)

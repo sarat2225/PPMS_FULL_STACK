@@ -40,3 +40,8 @@ class LogSerializer(serializers.ModelSerializer):
             #role=validated_data['role'],
         )
         return user
+
+class ChangePasswordSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['email','password']

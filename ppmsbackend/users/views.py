@@ -3,10 +3,8 @@ from rest_framework import permissions
 from rest_framework.response import Response
 from django.contrib.auth import login, logout
 from .models import CustomUser
-from .serializers import CustomUserSerializer,LogSerializer
+from .serializers import CustomUserSerializer,LogSerializer,ChangePasswordSerializer
 from django.shortcuts import get_object_or_404
-
-
 
 class RegisterView(generics.CreateAPIView):
     queryset = CustomUser.objects.all()
@@ -41,3 +39,15 @@ class LogoutView(generics.GenericAPIView):
     def post(self, request):
         logout(request)
         return Response({'message': 'Logged out successfully'},status=status.HTTP_200_OK)
+
+class ChangePasswordView(generics.GenericAPIView):
+    queryset=CustomUser.objects.all()
+    serializer_class=ChangePasswordSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        useremail=request.data.get('email')
+        present_user=CustomUser.objects.get(email=useremail)
+        present_user.set_password((request.data.get('password')))
+        present_user.save()
+        return Response({'message':'Password updated successfully'})

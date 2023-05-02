@@ -61,6 +61,5 @@ def daily_job():
         student_email = event.student.email
         subject = 'Reminder: Upcoming Academic Event'
         message = f'Hello {event.student.name},\n\nThis is a reminder that you have upcoming {upcoming_events} event scheduled on {one_month_from_now.strftime("%B %d, %Y")}. Please make sure to prepare accordingly.\n\nThank you,\nThe Academic Progress Management System'
-        from_email = 'noreply@iith.ac.in'
         recipient_list = [student_email]
-        send_mail(subject, message, from_email, recipient_list)
+        send_mail(subject, message, recipient_list)

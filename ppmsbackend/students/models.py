@@ -46,7 +46,7 @@ class Student(models.Model):
 
 class StudentPersonalDetails(models.Model):
     student = models.OneToOneField(Student, on_delete=models.CASCADE, related_name='personal_details')
-    joining_batch = models.CharField(max_length=10)
+    joining_batch = models.CharField(max_length=10,blank=True,null=True)
     GENDER_CHOICES = [
         ('M', 'Male'),
         ('F', 'Female'),
@@ -57,7 +57,7 @@ class StudentPersonalDetails(models.Model):
         choices=GENDER_CHOICES,
         default='M'
     )
-    date_of_birth = models.DateField()
+    date_of_birth = models.DateField(blank=True,null=True)
     CATEGORY_CHOICES = [
         ('GE', 'General'),
         ('OBC', 'OBC'),
@@ -79,6 +79,6 @@ class StudentPersonalDetails(models.Model):
         choices=PWD_CHOICES,
         default='N'
     )
-    state = models.CharField(max_length=100)
+    state = models.CharField(max_length=100,blank=True,null=True)
     # personal_email = models.EmailField(null=True)
-    contact_number = models.CharField(max_length=15)
+    contact_number = models.CharField(max_length=15,blank=True,null=True)
