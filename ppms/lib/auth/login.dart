@@ -49,7 +49,7 @@ Future<void> _login(String email, String password, context) async {
                         '/student/home',
                         arguments: global,
                       );
-                    } else if (data['role'] == "A") {
+                    } else if (data['role'] == "A" || data['role'] == "M") {
                       Navigator.pushNamed(context, '/admin/home');
                     }
                   },

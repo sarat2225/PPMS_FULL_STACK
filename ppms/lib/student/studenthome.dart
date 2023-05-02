@@ -1237,10 +1237,34 @@ class _StudentHomeAppState extends State<StudentHome> {
                               ],
                             ),
                           ),
-
+                          SizedBox(height: 75.0),
+                          Text(
+                            'Personal notes',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                           SizedBox(
-                            width: 100.0,
-                          ), //DC committee
+                            width: 500, // Width of the rectangular text box
+                            height: 200, // Height of the rectangular text box
+                            child: TextField(
+                              maxLines: 10,
+                              keyboardType: TextInputType.multiline,
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(),
+                                hintText: 'Enter your comment...',
+                              ),
+                              onChanged: (value) {
+                                // Code to run when the text is changed
+                              },
+                              onSubmitted: (value) {
+                                // Code to run when the user submits the text
+                              },
+                            ),
+                          )
+
+                          //DC committee
                         ],
                       ),
                       Column(

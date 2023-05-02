@@ -60,7 +60,7 @@ class AllStudentList(generics.ListCreateAPIView):
 
 class DetailedAllStudentsData(generics.ListCreateAPIView):
     serializer_class = StudentPersonalDetailsSerializer
-    pagination_class = CustomPagination
+    # pagination_class = CustomPagination
 
     def get_queryset(self):
         queryset = StudentPersonalDetails.objects.all()
@@ -68,7 +68,7 @@ class DetailedAllStudentsData(generics.ListCreateAPIView):
         #filter by rollno
         roll_no = self.request.query_params.get('rollno', None)
         if roll_no is not None:
-            queryset = queryset.filter(rollno=roll_no)
+            queryset = queryset.filter(student__rollno=roll_no)
 
         # filter by admission mode
         admission_mode = self.request.query_params.get('admission_mode', None)
@@ -124,7 +124,6 @@ class AcademicProgressByStudent(generics.RetrieveUpdateDestroyAPIView):
 class AllProfessorList(generics.ListCreateAPIView):
     queryset = Professor.objects.all()
     serializer_class = ProfessorSerializer
-    pagination_class = CustomPagination
 
 class AllDCList(generics.ListCreateAPIView):
     queryset = DoctoralCommittee.objects.all()

@@ -8,13 +8,13 @@ import 'package:ppms/admin/listofstudents.dart';
 void main() {
   runApp(MaterialApp(
     debugShowCheckedModeBanner: false,
-    initialRoute: '/login',
+    initialRoute: '/admin/home',
     routes: {
       '/login': (context) => Login(),
       '/sign_up': (context) => Register(),
       '/admin/home': (context) => AdminHomePage(),
       '/student/home': (context) => StudentHome(),
-      '/admin/listofstudents': (context) => MyDataTable(),
+      '/admin/listofstudents': (context) => StudentTable(),
     },
   ));
 }

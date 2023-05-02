@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:ppms/global/globals.dart';
 
 class CustomAppBar extends StatefulWidget implements PreferredSizeWidget {
   String pageTitle;
@@ -23,34 +24,27 @@ class _CustomAppBarState extends State<CustomAppBar> {
         child: SvgPicture.asset('assets/IITH_Logo.svg'),
       ),
       actions: <Widget>[
-        IconButton(
-          icon: Icon(Icons.notifications),
-          onPressed: () {
-            // Perform search action
-          },
-        ),
         PopupMenuButton<String>(
+          padding: EdgeInsets.fromLTRB(0, 0, 10, 0),
           icon: Icon(Icons.person),
           onSelected: (value) {
             // Perform action based on the selected menu item
-            if (value == "profile") {
+            if (value == "Reset Password") {
               // Navigate to profile screen
-            } else if (value == "logout") {
-              // Perform logout action
-            }
+            } else if (value == "logout") {}
           },
           itemBuilder: (BuildContext context) {
             return [
               PopupMenuItem<String>(
-                value: 'Profile',
+                value: 'Reset Password',
                 child: Row(
                   children: [
                     Icon(
-                      Icons.person,
+                      Icons.key_outlined,
                       color: Colors.orange,
                     ),
                     SizedBox(width: 8),
-                    Text('Profile'),
+                    Text('Reset Password'),
                   ],
                 ),
               ),
