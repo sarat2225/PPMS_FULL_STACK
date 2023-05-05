@@ -231,7 +231,7 @@ class _RegisterState extends State<Register> {
       },
     );
 
-    if (studentRegistrationResponse.statusCode != 201) {
+    if (studentRegistrationResponse.statusCode != 200) {
       // Handle error
       print(
           'Student registration failed with status code ${studentRegistrationResponse.body}');

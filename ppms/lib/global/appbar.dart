@@ -31,7 +31,9 @@ class _CustomAppBarState extends State<CustomAppBar> {
             // Perform action based on the selected menu item
             if (value == "Reset Password") {
               // Navigate to profile screen
-            } else if (value == "logout") {}
+            } else if (value == 'Logout') {
+              print('object');
+            }
           },
           itemBuilder: (BuildContext context) {
             return [
@@ -68,4 +70,7 @@ class _CustomAppBarState extends State<CustomAppBar> {
       ],
     );
   }
+
+  @override
+  Size get preferredSize => Size.fromHeight(kToolbarHeight);
 }

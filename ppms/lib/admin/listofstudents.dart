@@ -305,14 +305,6 @@ class _MyHomePageState extends State<StudentTable> {
           columnWidthMode: ColumnWidthMode.fill,
           columns: <GridColumn>[
             GridColumn(
-                columnName: 'Edit',
-                label: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    alignment: Alignment.center,
-                    child: Text(
-                      'Edit',
-                    ))),
-            GridColumn(
                 columnName: 'Name',
                 label: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -443,14 +435,6 @@ class StudentDataSource extends DataGridSource {
   void buildDataGridRows() {
     _studentData = paginatedDataSource
         .map<DataGridRow>((e) => DataGridRow(cells: [
-              DataGridCell<Widget>(
-                  columnName: 'Edit',
-                  value: IconButton(
-                    icon: Icon(Icons.edit),
-                    onPressed: () {
-                      print('@');
-                    },
-                  )),
               DataGridCell<String>(
                   columnName: 'Name', value: e.firstName + ' ' + e.lastName),
               DataGridCell<String>(columnName: 'Roll No', value: e.rollno),
@@ -473,16 +457,7 @@ class StudentDataSource extends DataGridSource {
   DataGridRowAdapter buildRow(DataGridRow row) {
     return DataGridRowAdapter(
       cells: row.getCells().map<Widget>((dataGridCell) {
-        if (dataGridCell.columnName == 'Edit') {
-          return Container(
-            alignment: Alignment.center,
-            padding: EdgeInsets.all(8.0),
-            child: IconButton(
-              icon: Icon(Icons.edit),
-              onPressed: () {},
-            ),
-          );
-        } else if (dataGridCell.columnName == 'Name') {
+        if (dataGridCell.columnName == 'Name') {
           return Container(
             alignment: Alignment.center,
             padding: EdgeInsets.all(8.0),

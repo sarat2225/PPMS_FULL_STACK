@@ -164,5 +164,5 @@ class Dashboard(generics.ListCreateAPIView):
             'YearlyJoiningStudentCount': list(students_joining_by_year),
             'YearlyPassedOutStudentCount': list(students_passed_out_by_year),
         }
-        
+
         return JsonResponse(summary_data)

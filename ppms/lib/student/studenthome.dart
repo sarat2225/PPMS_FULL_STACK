@@ -43,32 +43,6 @@ class StudentPersonalDetails {
   }
 }
 
-class studentDC {
-  late String guide;
-  late String coguide;
-  late String dc1;
-  late String dc2;
-  late String dc3;
-
-  studentDC({
-    String guide,
-    String coguide,
-    String dc1,
-    String dc2,
-    String dc3,
-  });
-  factory studentDC.fromJSON(Map<String, dynamic> json) {
-    return studentDC(
-      guide: json['guide']['first_name'] + ' ' + json['guide']['last_name'],
-      coguide:
-          json['coguide']['first_name'] + ' ' + json['coguide']['last_name'],
-      dc1: json['dc1']['first_name'] + ' ' + json['dc1']['last_name'],
-      dc2: json['dc2']['first_name'] + ' ' + json['dc2']['last_name'],
-      dc3: json['dc3']['first_name'] + ' ' + json['dc3']['last_name'],
-    );
-  }
-}
-
 class Student {
   late TextEditingController firstNameController;
   late TextEditingController lastNameController;
@@ -193,17 +167,6 @@ Future<Student> fetchPersonalDetails(String rollno) async {
     return Student.fromJson(jsonDecode(response.body));
   } else {
     throw Exception('Failed to load student personal details');
-  }
-}
-
-Future<dynamic> fetchDCDetails(String rollno) async {
-  print(rollno);
-  final response = await http.get(
-      Uri.parse('http://127.0.0.1:8000/student/$rollno/StudentDC-details/'));
-  if (response.statusCode == 200) {
-    return Student.fromJson(jsonDecode(response.body));
-  } else {
-    throw Exception('Failed to load student DC details');
   }
 }
 
@@ -413,11 +376,9 @@ class _StudentHomeAppState extends State<StudentHome> {
 
   Student? student;
   AcademicDetails? academicDetails;
-  studentDC? dcDetails;
   void _fetchData() async {
     student = await fetchPersonalDetails(roll_no);
     academicDetails = await fetchAcademicDetails(roll_no);
-    dcDetails = await fetchDCDetails(roll_no);
     print('init done');
     setState(() {
       _progressIndex =
@@ -725,73 +686,23 @@ class _StudentHomeAppState extends State<StudentHome> {
                           SizedBox(
                             height: 32.0,
                           ),
-                          Column(
-                        children: [
                           Container(
-                            width: 300,
-                            height: 150,
-                            padding: EdgeInsets.all(16.0),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(8.0),
-                              border: Border.all(color: Colors.grey),
-                            ),
-                            child: ListView(children: [
-                              Text(
-                                'Doctoral Committee',
-                                style: TextStyle(
-                                  fontSize: 18.0,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                              width: 300,
+                              height: 150,
+                              padding: EdgeInsets.all(16.0),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(8.0),
+                                border: Border.all(color: Colors.grey),
                               ),
-                              ListTile(
-                                title: Text(
-                                  'Guide',
+                              child: ListView(children: [
+                                Text(
+                                  'Doctoral Committee',
                                   style: TextStyle(
+                                    fontSize: 18.0,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                                subtitle: Text(dcDetails!.guide),
-                              ),
-                  
-                                ListTile(
-                                  title: Text(
-                                    'Co Guide:',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  subtitle: Text(dcDetails!.coguide),
-                                ),
-                                ListTile(
-                                  title: Text(
-                                    'DC-1:',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  subtitle: Text(dcDetails!.dc1),
-                                ),
-                                ListTile(
-                                  title: Text(
-                                    'DC-2:',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  subtitle:
-                                      Text(dcDetails!.dc2),
-                                ),
-                                ListTile(
-                                  title: Text(
-                                    'Dc-3',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  subtitle: Text(
-                                      dcDetails!.dc3),
-                                ),
-                            ]),
+                              ]))
                         ],
                       ),
                       Column(
@@ -1326,23 +1237,16 @@ class _StudentHomeAppState extends State<StudentHome> {
                               ],
                             ),
                           ),
-                          SizedBox(height: 75.0),
-                          Text(
-                            'Personal notes',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                          SizedBox(height: 50.0),
                           SizedBox(
                             width: 500, // Width of the rectangular text box
-                            height: 200, // Height of the rectangular text box
+                            // height: 500, // Height of the rectangular text box
                             child: TextField(
                               maxLines: 10,
                               keyboardType: TextInputType.multiline,
                               decoration: InputDecoration(
                                 border: OutlineInputBorder(),
-                                hintText: 'Enter your comment...',
+                                hintText: 'Meeting Notes',
                               ),
                               onChanged: (value) {
                                 // Code to run when the text is changed
@@ -1352,6 +1256,8 @@ class _StudentHomeAppState extends State<StudentHome> {
                               },
                             ),
                           )
+
+                          //DC committee
                         ],
                       ),
                       Column(
