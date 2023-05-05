@@ -19,6 +19,6 @@ class AcademicProgress(models.Model):
     notes = models.TextField(null=True, blank=True)
     withdraw_date = models.DateField(null=True, blank=True)
     withdraw_reason = models.CharField(max_length=255, null=True, blank=True)
-    degree_awarded = models.CharField(max_length=255)
+    degree_awarded = models.CharField(max_length=255,blank=True,null=True)
     convocation_date = models.DateField(null=True, blank=True)
     convocation_batch = models.CharField(max_length=255, null=True, blank=True)

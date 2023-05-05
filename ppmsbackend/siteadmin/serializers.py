@@ -9,3 +9,8 @@ class AcademicProgressSerializer(serializers.ModelSerializer):
     class Meta:
         model = AcademicProgress
         fields = '__all__'
+
+class StudentLoginAcademicDetailsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AcademicProgress
+        fields = '__all__'

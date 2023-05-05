@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils.timezone import now
+import datetime
 
 class Student(models.Model):
     id = models.AutoField(primary_key=True)
@@ -46,7 +47,7 @@ class Student(models.Model):
 
 class StudentPersonalDetails(models.Model):
     student = models.OneToOneField(Student, on_delete=models.CASCADE, related_name='personal_details')
-    joining_batch = models.CharField(max_length=10,blank=True,null=True)
+    joining_batch = models.CharField(max_length=10,blank=True,null=True,default='')
     GENDER_CHOICES = [
         ('M', 'Male'),
         ('F', 'Female'),
@@ -57,7 +58,7 @@ class StudentPersonalDetails(models.Model):
         choices=GENDER_CHOICES,
         default='M'
     )
-    date_of_birth = models.DateField(blank=True,null=True)
+    date_of_birth = models.DateField(blank=True, null=True, default = datetime.date.today)
     CATEGORY_CHOICES = [
         ('GE', 'General'),
         ('OBC', 'OBC'),
@@ -79,6 +80,6 @@ class StudentPersonalDetails(models.Model):
         choices=PWD_CHOICES,
         default='N'
     )
-    state = models.CharField(max_length=100,blank=True,null=True)
+    state = models.CharField(max_length=100,blank=True,null=True,default='')
     # personal_email = models.EmailField(null=True)
-    contact_number = models.CharField(max_length=15,blank=True,null=True)
+    contact_number = models.CharField(max_length=15,blank=True,null=True,default='')

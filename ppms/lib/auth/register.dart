@@ -85,7 +85,7 @@ class _RegisterState extends State<Register> {
 
   final _formKey = GlobalKey<FormState>();
   String dateFormat = "yyyy-MM-dd";
-  bool emailVerified = false;
+  bool emailVerified = true;
   TextEditingController _otpController = TextEditingController();
   bool mailSent = false;
 
@@ -231,15 +231,36 @@ class _RegisterState extends State<Register> {
       },
     );
 
-    if (studentRegistrationResponse.statusCode != 200) {
+    Map<String, dynamic> responseMap =
+        json.decode(studentRegistrationResponse.body);
+    if (studentRegistrationResponse.statusCode != 200 &&
+        studentRegistrationResponse.statusCode != 201) {
       // Handle error
       print(
           'Student registration failed with status code ${studentRegistrationResponse.body}');
       return;
     }
 
-    // Registration successful
+    // print(studentRegistrationResponse.body);
+    final studentPersonalResponse = await http.post(
+      Uri.parse('$apiUrl/student/all-students-personal-details/'),
+      body: {
+        'student': responseMap['id'].toString(),
+      },
+    );
+    print(studentPersonalResponse.body);
+    print(studentPersonalResponse.statusCode);
     print('Registration successful!');
+
+    final studentAcademicResponse = await http.post(
+      Uri.parse('$apiUrl/siteadmin/all-student-academic-data/'),
+      body: {
+        'student': responseMap['id'].toString(),
+      },
+    );
+    print(studentAcademicResponse.body);
+    print(studentAcademicResponse.statusCode);
+    print('Academic Registration successful!');
   }
 
   @override
@@ -737,6 +758,7 @@ class _RegisterState extends State<Register> {
                                 setState(() {
                                   _previousTextController.text =
                                       value.toString();
+                                  password = _previousTextController.text;
                                 });
                               },
                             ),
@@ -778,10 +800,7 @@ class _RegisterState extends State<Register> {
                               validator: (String? value) {
                                 if (value == null || value.isEmpty) {
                                   return 'Enter valid password';
-                                } else if (!identical(value, password)) {
-                                  print(value);
-                                  print('@');
-                                  print(password);
+                                } else if (cnfPassword != password) {
                                   return 'password mismatch';
                                 }
                                 return null;

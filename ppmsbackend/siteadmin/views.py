@@ -16,6 +16,10 @@ class CustomPagination(pagination.PageNumberPagination):
     page_size_query_param = 'page_size'
     max_page_size = 100
 
+class DetailedAllStudentsAcademicData(generics.ListCreateAPIView):
+    queryset = AcademicProgress.objects.all()
+    serializer_class = StudentLoginAcademicDetailsSerializer
+
 class AllStudentList(generics.ListCreateAPIView):
     serializer_class = StudentSerializer
     pagination_class = CustomPagination

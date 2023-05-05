@@ -21,3 +21,8 @@ class StudentPersonalDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = StudentPersonalDetails
         fields = '__all__'
+
+class StudentLoginPersonalDetailsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StudentPersonalDetails
+        fields = '__all__'

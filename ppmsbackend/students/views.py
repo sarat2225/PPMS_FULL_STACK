@@ -23,7 +23,7 @@ class StudentDetail(generics.RetrieveUpdateDestroyAPIView):
 
 class AllStudentPersonalDetails(generics.ListCreateAPIView):
     queryset = StudentPersonalDetails.objects.all()
-    serializer_class = StudentPersonalDetailsSerializer
+    serializer_class = StudentLoginPersonalDetailsSerializer
 
 class StudentDcView(APIView):
     def get(self, request, rollno):
