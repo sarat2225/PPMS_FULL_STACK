@@ -10,14 +10,14 @@ The frontend of the application allows users to interact with the application an
 ### Frontend
 Clone the repository
 Navigate to the project directory
-Run flutter pub get to install the necessary packages
+Run ```flutter pub get``` to install the necessary packages
 ### Backend
 Clone the repository
 Navigate to the project directory
 Create a virtual environment and activate it
-Run pip install -r requirements.txt to install the necessary packages
-Run python manage.py migrate to create the necessary database tables
-Run python manage.py runserver to start the development server
+Run ```pip install -r requirements.txt``` to install the necessary packages
+Run ```python manage.py migrate``` to create the necessary database tables
+Run ```python manage.py runserver``` to start the development server
 ## Usage
-Navigate to the frontend directory and run flutter run to start the application
+Navigate to the frontend directory and run ```flutter run``` to start the application
 Use the application to perform the desired actions
